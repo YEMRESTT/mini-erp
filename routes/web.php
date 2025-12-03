@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 use Revolution\Google\Sheets\Facades\Sheets;
 use Illuminate\Support\Facades\File;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\StockController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -111,4 +114,14 @@ Route::get('/sheets-test', function () {
         ]);
 
     return 'Google Sheets bağlantısı ÇALIŞIYOR! 🚀';
+});
+
+
+Route::resource('products', ProductController::class);
+Route::resource('categories', ProductCategoryController::class);
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+    Route::post('stock/{id}/update', [StockController::class, 'updateStock'])->name('stock.update');
 });
