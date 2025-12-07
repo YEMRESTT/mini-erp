@@ -20,6 +20,8 @@ class ProductImageFactory extends Factory
             'product_id' => null,
             'image_url' => $this->faker->imageUrl(500, 500, 'products', true),
             'is_primary' => false,
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

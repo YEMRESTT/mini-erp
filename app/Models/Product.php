@@ -24,6 +24,19 @@ class Product extends Model
         'description',
     ];
 
+    public static function booted()
+    {
+        static::updated(function ($product) {
+            if ($product->isDirty('price')) {
+                $product->priceLogs()->create([
+                    'old_price' => $product->getOriginal('price'),
+                    'new_price' => $product->price,
+                ]);
+            }
+        });
+    }
+
+
     public function categories()
     {
         return $this->belongsToMany(ProductCategory::class, 'product_category_pivot');

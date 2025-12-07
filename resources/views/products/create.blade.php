@@ -45,7 +45,15 @@
                        class="w-full border rounded p-2">
             </div>
 
-            <div class="mb-4">
+                <div class="mb-4">
+                    <label class="block font-medium mb-1">Fiyat (₺)</label>
+                    <input type="number" step="0.01" name="price" value="{{ old('price') }}"
+                           class="w-full border rounded p-2" required>
+                </div>
+
+
+
+                <div class="mb-4">
                 <label class="block font-medium mb-1">Durum</label>
                 <select name="status" required
                         class="w-full border rounded p-2">
@@ -90,7 +98,7 @@
                     Geri
                 </a>
                 <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        class="px-4 py-2 bg-blue-600 text-black rounded hover:bg-blue-700">
                     Kaydet
                 </button>
             </div>

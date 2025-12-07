@@ -23,6 +23,8 @@ class InvoiceItemFactory extends Factory
             'description' => $product?->name ?? 'Service Fee',
             'quantity' => $this->faker->numberBetween(1, 5),
             'amount' => $this->faker->randomFloat(2, 100, 5000),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

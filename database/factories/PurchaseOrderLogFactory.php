@@ -20,6 +20,8 @@ class PurchaseOrderLogFactory extends Factory
             'order_id' => null,
             'user_id' => 1,
             'action' => $this->faker->sentence(3),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

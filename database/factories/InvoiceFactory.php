@@ -19,7 +19,9 @@ class InvoiceFactory extends Factory
         return [
             'sales_order_id' => null,
             'due_date' => $this->faker->dateTimeBetween('now', '+10 days'),
-            'status' => 'pending',
+            'status' => fake()->randomElement(['Pending', 'Approved', 'Completed']),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

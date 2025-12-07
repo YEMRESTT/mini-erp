@@ -8,14 +8,18 @@ use Illuminate\Support\Facades\File;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DashboardController;
 
+// Root → Dashboard yönlendirmesi
 Route::get('/', function () {
-    return view('dashboard');
+    return redirect()->route('dashboard');
 })->middleware(['auth', 'verified']);
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Dashboard Controller route
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -25,6 +29,7 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+// Google Auth Routes
 Route::get('/auth/google', function () {
     return Socialite::driver('google')->redirect();
 })->name('google.login');
@@ -32,80 +37,39 @@ Route::get('/auth/google', function () {
 Route::get('/auth/google/callback', function () {
     $googleUser = Socialite::driver('google')->user();
 
-    // Kullanıcı var mı kontrol
     $user = \App\Models\User::firstOrCreate(
         ['email' => $googleUser->getEmail()],
         [
             'name' => $googleUser->getName(),
-            'password' => bcrypt(str()->random(16)), // email/password giriş de çalışsın diye
+            'password' => bcrypt(str()->random(16)),
         ]
     );
 
     Auth::login($user);
-
     return redirect('/dashboard');
 });
 
-
-
+// Sheets Test Route
 Route::get('/sheets-test', function () {
-    // 1. JSON dosyasının bulunduğu doğru yolu belirleyin.
-    // storage_path() kullanmak, C:\xampp\htdocs\... gibi karmaşık yollardan kurtarır.
     $credentialsPath = storage_path('app\mini-erp-479413-7a8dbcbc7e35.json');
 
     if (!File::exists($credentialsPath)) {
-        // Dosya bulunamazsa hata döndür
-        return 'HATA: mini-erp-479413-7a8dbcbc7e35.json dosyası bulunamıyor. Lütfen yolu kontrol edin: ' . $credentialsPath;
+        return 'HATA: mini-erp-479413-7a8dbcbc7e35.json dosyası bulunamıyor.';
     }
 
-    // 2. JSON dosyasının içeriğini oku
     $credentialsContent = File::get($credentialsPath);
-
-    // 3. Kütüphanenin yapılandırmasını DİNAMİK olarak ayarla
-    // Bu adım, kütüphane için bir "hizmet hesabı" yapılandırması ayarlar.
-    // Kullandığınız kütüphanenin API'sine göre bu metot değişebilir.
-
-    // Örnek Kütüphane Yapılandırma Senaryosu (Sizin kütüphanenize uyarlayın)
-    // Eğer kütüphane, konfigürasyonu çalışma zamanında ayarlamaya izin veriyorsa:
-
-    // 3.1. Kütüphane metodu ile yapılandırma (Eğer varsa)
-    // Sheets::setServiceAccountCredentials($credentialsContent);
-
-    // 3.2. VEYA, Google Client'ı elle başlatıp kütüphaneye vermek (En Garanti Yöntem)
-
-    // Google API Client'ı dahil et (composer ile kurulmuş olmalı)
-    // use Google\Client;
-    // use Google\Service\Sheets;
 
     try {
         $client = new Google\Client();
-
-        // Kimlik bilgilerini doğrudan JSON içeriği olarak ver
         $client->setAuthConfig(json_decode($credentialsContent, true));
-
-        // Sheets API için gerekli kapsamı tanımla
         $client->setScopes([\Google\Service\Sheets::SPREADSHEETS]);
-
-        // Kütüphaneye, bu yetkilendirilmiş Google Client nesnesini kullanmasını söyle
-        // Bu, kullandığınız kütüphanenin API'sindeki özel bir metot olabilir.
-        // Eğer kütüphane doğrudan Sheets::client($client) gibi bir metot sunmuyorsa, bu kısım kütüphanenin nasıl çalıştığına bağlıdır.
-
-        // Eğer kütüphane, konfigürasyon yoluyla çalışıyorsa, bu elle başlatma adımı gerekmeyebilir.
-
-
-        // Eğer kütüphane, sadece ENV'deki yolu okuyorsa:
-        // ENV değişkenini KOD içerisinde anlık olarak ayarla
         putenv("GOOGLE_APPLICATION_CREDENTIALS=$credentialsPath");
-        config(['filesystems.disks.google.credentials' => $credentialsPath]); // Bazı kütüphaneler dosya sistemini kullanır
-
     } catch (\Exception $e) {
-        return 'HATA: Google Client başlatılırken bir sorun oluştu. Detay: ' . $e->getMessage();
+        return 'Google Client hatası: ' . $e->getMessage();
     }
-
 
     $sheetId = env('GOOGLE_SHEET_ID');
 
-    // sheets-test rotası, yetkilendirme adımlarından sonra çalışır
     Sheets::spreadsheet($sheetId)
         ->sheet('Sheet1')
         ->append([
@@ -113,15 +77,24 @@ Route::get('/sheets-test', function () {
             [1, 'Yusuf', 'test@example.com']
         ]);
 
-    return 'Google Sheets bağlantısı ÇALIŞIYOR! 🚀';
+    return 'Google Sheets bağlantısı çalıştı! 🚀';
 });
 
-
+// Product Routes
 Route::resource('products', ProductController::class);
+
+// Category Routes
 Route::resource('categories', ProductCategoryController::class);
 
-
+// Stock Routes
 Route::middleware('auth')->group(function () {
     Route::get('stock', [StockController::class, 'index'])->name('stock.index');
     Route::post('stock/{id}/update', [StockController::class, 'updateStock'])->name('stock.update');
+    Route::patch('stock/{id}/update-min-level', [StockController::class, 'updateMinLevel'])->name('stock.updateMin');
+});
+
+// Notification Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });

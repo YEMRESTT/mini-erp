@@ -25,6 +25,8 @@ class NotificationFactory extends Factory
             'title' => $this->faker->sentence(3),
             'message' => $this->faker->sentence(),
             'is_read' => false,
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

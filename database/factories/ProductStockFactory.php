@@ -19,6 +19,8 @@ class ProductStockFactory extends Factory
         return [
             'product_id' => null, // seeder’da dolduracağız
             'quantity' => $this->faker->numberBetween(0, 120),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

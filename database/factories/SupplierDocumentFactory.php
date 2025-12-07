@@ -20,6 +20,8 @@ class SupplierDocumentFactory extends Factory
             'supplier_id' => null,
             'file_path' => 'storage/suppliers/sample.pdf',
             'description' => $this->faker->sentence(),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

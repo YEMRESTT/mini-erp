@@ -18,8 +18,10 @@ class PurchaseOrderFactory extends Factory
     {
         return [
             'supplier_id' => \App\Models\Supplier::inRandomOrder()->first()->id ?? null,
-            'expected_date' => $this->faker->dateTimeBetween('now', '+15 days'),
-            'status' => 'pending',
+            //'expected_date' => $this->faker->dateTimeBetween('now', '+15 days'),
+            'status' => fake()->randomElement(['Pending', 'Approved', 'Completed']),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

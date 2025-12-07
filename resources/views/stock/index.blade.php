@@ -39,21 +39,27 @@
                             <span class="text-xs text-gray-500">SKU: {{ $stock->product->sku }}</span>
                         </td>
                         <td class="px-4 py-3">{{ $qty }}</td>
-                        <td class="px-4 py-3">{{ $min }}</td>
+                        <td class="px-4 py-3 flex items-center gap-2 text-gray-900">
+                            {{ $min }}
+                            <button onclick="openMinModal({{ $stock->id }}, {{ $min }})"
+                                    class="text-blue-600 text-xs hover:underline">
+                                ✏️
+                            </button>
+                        </td>
                         <td class="px-4 py-3">
-                                <span class="px-2 py-1 rounded text-white text-xs
+                                <span class="px-2 py-1 rounded text-gray-900 text-xs
                                     {{ $isCritical ? 'bg-red-600' : 'bg-green-600' }}">
                                     {{ $isCritical ? 'Kritik' : 'Normal' }}
                                 </span>
                         </td>
                         <td class="px-4 py-3 text-center">
                             <button onclick="openStockModal({{ $stock->id }}, 'in')"
-                                    class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">
+                                    class="bg-blue-600 text-gray-900 px-3 py-1 rounded text-xs hover:bg-blue-700">
                                 Giriş
                             </button>
 
                             <button onclick="openStockModal({{ $stock->id }}, 'out')"
-                                    class="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700">
+                                    class="bg-red-600 text-gray-900 px-3 py-1 rounded text-xs hover:bg-red-700">
                                 Çıkış
                             </button>
                         </td>
@@ -73,7 +79,7 @@
     {{-- Modal --}}
     <div id="stockModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center">
         <div class="bg-white rounded-lg p-6 w-96 shadow">
-            <h3 class="text-lg font-semibold mb-4">Stok Güncelle</h3>
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">Stok Güncelle</h3>
             <form id="stockForm" method="POST">
                 @csrf
                 <input type="hidden" name="type" id="modalType">
@@ -86,10 +92,37 @@
                 <div class="flex justify-end gap-2">
                     <button type="button"
                             onclick="closeStockModal()"
-                            class="px-3 py-1 bg-gray-400 text-white rounded">
+                            class="px-3 py-1 bg-gray-400 text-gray-900  rounded">
                         İptal
                     </button>
-                    <button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                    <button class="px-3 py-1 bg-green-600 text-gray-900 rounded hover:bg-green-700">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Min Level Modal --}}
+    <div id="minModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-80 shadow-xl">
+            <h3 class="text-lg font-semibold mb-4 text-gray-700">Kritik Seviye Güncelle</h3>
+
+            <form id="minForm" method="POST">
+                @csrf
+                @method('PATCH')
+
+                <label class="block text-sm font-semibold mb-1 text-gray-700">Min Stok Seviyesi</label>
+                <input type="number" name="min_level"
+                       class="w-full border rounded px-2 py-1 mb-4" required>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button"
+                            onclick="closeMinModal()"
+                            class="px-3 py-1 bg-gray-400 text-black rounded hover:bg-gray-500">
+                        İptal
+                    </button>
+                    <button class="px-3 py-1 bg-green-600 text-black rounded hover:bg-green-700">
                         Kaydet
                     </button>
                 </div>
@@ -110,6 +143,23 @@
         function closeStockModal() {
             document.getElementById('stockModal').classList.add('hidden');
         }
+
+        function openMinModal(id, minLevel) {
+            const form = document.getElementById('minForm');
+            form.action = '/stock/' + id + '/update-min-level';
+            form.min_level.value = minLevel;
+
+            const modal = document.getElementById('minModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeMinModal() {
+            const modal = document.getElementById('minModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
     </script>
 
 </x-app-layout>

@@ -20,6 +20,8 @@ class ProductCategoryFactory extends Factory
             'name' => ucfirst($this->faker->word()),
             'description' => $this->faker->sentence(),
             'parent_id' => null,
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

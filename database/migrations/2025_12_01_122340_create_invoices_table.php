@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sales_order_id')->constrained()->cascadeOnDelete();
             $table->date('due_date');
-            $table->enum('status', ['pending','paid','late']);
+            $table->enum('status', ['Pending', 'Approved', 'Completed']);
             $table->timestamps();
         });
     }

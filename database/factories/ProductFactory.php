@@ -22,6 +22,8 @@ class ProductFactory extends Factory
             'barcode' => $this->faker->ean13(),
             'description' => $this->faker->sentence(),
             'status' => 'active',
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

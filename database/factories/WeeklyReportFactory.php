@@ -20,6 +20,8 @@ class WeeklyReportFactory extends Factory
             'total_sales' => $this->faker->randomFloat(2, 1000, 100000),
             'top_product' => $this->faker->word(),
             'top_customer' => $this->faker->name(),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

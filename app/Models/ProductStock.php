@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 /*
  * Bir ürünün mevcut stok miktarı burada tutuluyor.
 Stok hareketleri başka tabloda (stock_movements),
@@ -35,5 +36,10 @@ class ProductStock extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function movements()
+    {
+        return $this->hasMany(StockMovement::class, 'product_id');
     }
 }

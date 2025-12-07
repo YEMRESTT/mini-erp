@@ -16,7 +16,7 @@
 
         <div class="flex justify-between items-center mb-6">
             <a href="{{ route('products.create') }}"
-               class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+               class="bg-blue-600 text-black px-4 py-2 rounded hover:bg-blue-700">
                 Yeni Ürün Ekle
             </a>
         </div>
@@ -24,7 +24,7 @@
         <div class="space-y-4">
 
             @foreach ($products as $product)
-                <div class="bg-white rounded-xl shadow hover:shadow-md transition p-3 flex gap-4 items-center">
+                <div class="bg-gray-400 rounded-xl shadow hover:shadow-md transition p-3 flex gap-4 items-center">
 
                     {{-- Küçük Görsel --}}
                     @php $primaryImage = $product->images->first(); @endphp
@@ -52,15 +52,30 @@
                                 $level = $product->stock->min_level;
                                 $color = $qty <= $level ? 'bg-red-500' : 'bg-green-600';
                             @endphp
-                            <span class="mt-2 inline-block px-2 py-1 text-[11px] rounded text-white {{ $color }}">
+                            <span class="mt-2 inline-block px-2 py-1 text-[11px] rounded text-black {{ $color }}">
                                 Stok: {{ $qty }}
                             </span>
                         @else
-                            <span class="mt-2 inline-block px-2 py-1 text-[11px] rounded bg-gray-500 text-white">
+                            <span class="mt-2 inline-block px-2 py-1 text-[11px] rounded bg-gray-500 text-black">
                                 Stok Yok
                             </span>
                         @endif
                     </div>
+
+                    {{-- Güncel Fiyat --}}
+                    @php
+                        $lastPrice = $product->priceLogs->sortByDesc('created_at')->first()->new_price ?? null;
+                    @endphp
+
+                    @if($lastPrice)
+                        <span class="mt-2 inline-block px-2 py-1 text-[12px] rounded bg-blue-600 text-black">
+                            Fiyat: ₺{{ number_format($lastPrice, 2, ',', '.') }}
+                        </span>
+                    @else
+                        <span class="mt-2 inline-block px-2 py-1 text-[12px] rounded bg-gray-400 text-black">
+                            Fiyat Yok
+                        </span>
+                    @endif
 
 
                     {{-- İşlem Düğmeleri --}}

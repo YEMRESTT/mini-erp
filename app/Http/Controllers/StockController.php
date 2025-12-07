@@ -35,6 +35,17 @@ class StockController extends Controller
 
         $stock->save();
 
+        // Kritik stok kontrolü
+        if ($stock->quantity <= $stock->min_level) {
+            \App\Models\Notification::create([
+                'product_id' => $stock->product_id,
+                'type' => 'critical_stock',
+                'title' => 'Kritik Stok Uyarısı',
+                'message' => $stock->product->name . ' kritik stok seviyesine düştü!',
+                'is_read' => false,
+            ]);
+        }
+
         // Log Kaydı
         $stock->movements()->create([
             'quantity' => $request->quantity,
@@ -43,5 +54,18 @@ class StockController extends Controller
         ]);
 
         return back()->with('success', 'Stok başarıyla güncellendi!');
+    }
+
+    public function updateMinLevel(Request $request, $id)
+    {
+        $request->validate([
+            'min_level' => 'required|integer|min:0',
+        ]);
+
+        $stock = ProductStock::findOrFail($id);
+        $stock->min_level = $request->min_level;
+        $stock->save();
+
+        return back()->with('success', 'Minimum stok seviyesi güncellendi!');
     }
 }

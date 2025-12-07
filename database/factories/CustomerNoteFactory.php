@@ -19,6 +19,8 @@ class CustomerNoteFactory extends Factory
         return [
             'customer_id' => null,
             'note' => $this->faker->sentence(),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+            'updated_at' => now(),
         ];
     }
 }

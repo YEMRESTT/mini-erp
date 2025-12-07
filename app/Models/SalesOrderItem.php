@@ -40,6 +40,11 @@ class SalesOrderItem extends Model
         'price' => 'decimal:2',
     ];
 
+    public function order()
+    {
+        return $this->belongsTo(\App\Models\SalesOrder::class, 'order_id');
+    }
+
     public function salesOrder()
     {
         return $this->belongsTo(SalesOrder::class, 'order_id');
