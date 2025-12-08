@@ -24,7 +24,7 @@ Logları var mı?
 
 hepsi bu model üzerinden yönetilir.
 
-🟦 customer()
+🟦 customers()
 
 Siparişi hangi müşteri vermiş?
 
@@ -74,8 +74,9 @@ class SalesOrder extends Model
 
     public function items()
     {
-        return $this->hasMany(SalesOrderItem::class);
+        return $this->hasMany(SalesOrderItem::class, 'sales_order_id');
     }
+
 
     public function logs()
     {

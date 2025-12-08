@@ -22,14 +22,12 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\WeeklyReport;
 use App\Models\Notification;
-use Carbon\Carbon;
-use App\Models\ProductPriceLog;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::firstOrCreate(
+        User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Admin',
@@ -38,7 +36,6 @@ class DatabaseSeeder extends Seeder
         );
 
         ProductCategory::factory(10)->create();
-
 
         Product::factory(50)->create()->each(function ($product) {
             ProductStock::factory()->create([
@@ -54,95 +51,78 @@ class DatabaseSeeder extends Seeder
                 ProductCategory::inRandomOrder()->take(rand(1,3))->pluck('id')
             );
 
-            // 💰 Ürün fiyatı oluştur
-            $product->update([
-                'price' => fake()->randomFloat(2, 50, 2000),
-            ]);
+            // 💰 Fiyat
+            $price = fake()->randomFloat(2, 50, 1500);
+            $product->update(['price' => $price]);
 
-            // 📈 Fiyat geçmişi oluştur
-            $price = $product->price;
-            for ($i = 0; $i < rand(1, 5); $i++) {
+            // 📈 Fiyat log
+            for ($i = 0; $i < rand(1,5); $i++) {
                 $old = $price;
-                $price = fake()->randomFloat(2, 50, 2000);
+                $price = fake()->randomFloat(2, 50, 1500);
 
                 $product->priceLogs()->create([
                     'old_price' => $old,
                     'new_price' => $price,
-                    'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+                    'created_at' => fake()->dateTimeBetween('-6 months', 'now')
                 ]);
 
                 $product->update(['price' => $price]);
             }
         });
 
+        // CUSTOMERS
+        Customer::factory(50)->create()->each(function ($c) {
+            CustomerNote::factory(2)->create([
+                'customer_id' => $c->id
+            ]);
+        });
 
-        Supplier::factory(10)->create()->each(function ($supplier) {
-            SupplierDocument::factory(1)->create([
-                'supplier_id' => $supplier->id,
+        Supplier::factory(10)->create()->each(function ($s) {
+            SupplierDocument::factory()->create([
+                'supplier_id' => $s->id
             ]);
         });
 
         // PURCHASE ORDERS
-        PurchaseOrder::factory(20)->create([
-            'status' => 'pending'
-        ])->each(function ($order) {
-
+        PurchaseOrder::factory(20)->create()->each(function ($order) {
             $items = PurchaseOrderItem::factory(rand(1,4))->create([
                 'order_id' => $order->id
             ]);
 
-            $order->total_amount = $items->sum(fn($i) => $i->quantity * $i->price);
-            $order->status = fake()->randomElement(['Pending', 'Approved', 'Completed']);
-            $order->save();
-
-            PurchaseOrderLog::factory(2)->create([
-                'order_id' => $order->id,
-
+            $order->update([
+                'status' => fake()->randomElement(['Pending', 'Approved', 'Completed']),
+                'total_amount' => $items->sum(fn($i) => $i->quantity * $i->price)
             ]);
 
-            foreach ($items as $item) {
-                $stock = ProductStock::firstOrCreate(['product_id' => $item->product_id]);
-                $stock->increment('quantity', $item->quantity);
-            }
+            PurchaseOrderLog::factory(2)->create([
+                'order_id' => $order->id
+            ]);
         });
 
         // SALES ORDERS
-        $customerIds = \App\Models\Customer::pluck('id')->toArray();
+        $customerIds = Customer::pluck('id')->toArray();
 
         SalesOrder::factory(30)->create()->each(function ($order) use ($customerIds) {
 
-
-
-            $items = \App\Models\SalesOrderItem::factory(rand(1,4))->create([
-                'order_id' => $order->id,
+            // 🆕 MÜŞTERİ BAĞLANDI!
+            $order->update([
+                'customer_id' => fake()->randomElement($customerIds)
             ]);
 
-            $order->total = $items->sum(fn($i) => $i->quantity * $i->price);
-            $order->status = fake()->randomElement(['Pending', 'Approved', 'Completed']);
-            $order->save();
-
-            \App\Models\SalesOrderLog::factory(2)->create([
-                'order_id' => $order->id,
-                'user_id' => 1,
+            $items = SalesOrderItem::factory(rand(1,4))->create([
+                'sales_order_id' => $order->id
             ]);
 
-            foreach ($items as $item) {
-                $stock = \App\Models\ProductStock::firstOrCreate(['product_id' => $item->product_id]);
-                $stock->decrement('quantity', $item->quantity);
-            }
+            $order->update([
+                'total' => $items->sum(fn($i) => $i->quantity * $i->price),
+                'status' => fake()->randomElement(['Pending', 'Approved', 'Completed'])
+            ]);
 
-            if (rand(0,1)) {
-                $invoice = \App\Models\Invoice::factory()->create([
-                    'sales_order_id' => $order->id,
-                ]);
-
-                \App\Models\InvoiceItem::factory($items->count())->create([
-                    'invoice_id' => $invoice->id,
-                ]);
-            }
+            SalesOrderLog::factory(2)->create([
+                'order_id' => $order->id,
+                'user_id' => 1
+            ]);
         });
-
-
 
         WeeklyReport::factory(6)->create();
         Notification::factory(30)->create();

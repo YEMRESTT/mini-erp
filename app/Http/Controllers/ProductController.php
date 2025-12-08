@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\ProductStock;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -32,42 +31,26 @@ class ProductController extends Controller
             'price'      => 'required|numeric|min:0',
         ]);
 
+        // Ürün kaydı
         $product = Product::create([
-            'name' => $request->name,
-            'sku' => $request->sku,
-            'barcode' => $request->barcode,
+            'name'        => $request->name,
+            'sku'         => $request->sku,
+            'barcode'     => $request->barcode,
             'description' => $request->description,
-            'status' => $request->status,
-            'price' => $request->price,
+            'status'      => $request->status,
+            'price'       => $request->price,
         ]);
 
+        // Kategori sync
         $product->categories()->sync($request->categories);
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products', 'public');
-
-                $product->images()->create([
-                    'image_url' => $path,
-                    'is_primary' => $index === 0,
-                ]);
-            }
-        }
-
-        ProductStock::create([
-            'product_id' => $product->id,
-            'quantity'   => 0,
-            'min_level'  => 5,
-        ]);
-
-        // İlk fiyat log kaydı
+        // İlk fiyat log
         $product->priceLogs()->create([
-            'old_price' => null,
+            'old_price' => $request->price,
             'new_price' => $request->price,
         ]);
 
-        return redirect()->route('products.index')
-            ->with('success', 'Ürün başarıyla oluşturuldu!');
+        return redirect()->route('products.index')->with('success', 'Ürün başarıyla oluşturuldu!');
     }
 
     public function show($id)
@@ -82,13 +65,15 @@ class ProductController extends Controller
             'stockMovements'
         ])->findOrFail($id);
 
-        // Grafik için veri
+        // 🔥 Fiyat geçmişi
         $priceHistory = $product->priceLogs->sortBy('created_at');
-        $priceDates = $priceHistory->pluck('created_at')->map(fn($d) => $d->format('d.m'))->toArray();
+
+        $priceDates  = $priceHistory->pluck('created_at')->map(fn($d) => $d->format('d.m'))->toArray();
         $priceValues = $priceHistory->pluck('new_price')->toArray();
 
-        $recentSales = $product->salesItems->sortByDesc('created_at')->take(5);
-        $recentPurchases = $product->purchaseItems->sortByDesc('created_at')->take(5);
+        // 🔥 Satış & satın alma detayları
+        $recentSales      = $product->salesItems->sortByDesc('created_at')->take(5);
+        $recentPurchases  = $product->purchaseItems->sortByDesc('created_at')->take(5);
 
         return view('products.show', compact(
             'product',
@@ -114,36 +99,27 @@ class ProductController extends Controller
             'price'      => 'required|numeric|min:0',
         ]);
 
-        // Eski fiyatı al
         $oldPrice = $product->price;
 
         // Ürünü güncelle
         $product->update([
-            'name' => $request->name,
-            'barcode' => $request->barcode,
+            'name'        => $request->name,
+            'barcode'     => $request->barcode,
             'description' => $request->description,
-            'status' => $request->status,
-            'price' => $request->price,
+            'status'      => $request->status,
+            'price'       => $request->price,
         ]);
 
-        // Fiyat değişmişse PriceLog kaydı oluştur
-        if ($oldPrice != $request->price) {
-            $product->priceLogs()->create([
-                'old_price' => $oldPrice,
-                'new_price' => $request->price,
-            ]);
-        }
+
 
         $product->categories()->sync($request->categories);
 
-        return redirect()->route('products.index')
-            ->with('success', 'Ürün güncellendi!');
+        return redirect()->route('products.index')->with('success', 'Ürün güncellendi!');
     }
 
     public function destroy(Product $product)
     {
         $product->delete();
-        return redirect()->route('products.index')
-            ->with('success', 'Ürün silindi!');
+        return redirect()->route('products.index')->with('success', 'Ürün silindi!');
     }
 }

@@ -2,55 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\CustomerNote;
-use App\Models\SalesOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-/*
- * 🟦 name, email, phone, address
+use Illuminate\Database\Eloquent\Model;
 
-Müşteri bilgileri.
-
-🟩 is_active
-
-Cron-job tarafından 180 gün sipariş vermeyen müşterileri “pasif” işaretleyeceğiz.
-Bu alan tam bunun için.
-
-🟨 İlişkiler:
-✔ notes()
-
-Müşteriye yazılan notlar:
-
-"VIP müşteri"
-
-"Ödemeleri geciktiriyor"
-
-"İndirim yapıldı"
-
-Hepsi customer_notes tablosunda tutuluyor.
-
-✔ salesOrders()
-
-Müşterinin verdiği tüm siparişler:
-
-Sipariş geçmişi
-
-Toplam harcama
-
-En çok ne almış?
-
-Aylık sipariş sayısı
-
- */
 class Customer extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'address',
-        'is_active',
+        'name','email','phone','address','city','birth_date',
+        'vat_number','profile_photo','segment','loyalty_points',
+        'status','last_order_date'
     ];
 
     public function notes()
@@ -60,6 +22,19 @@ class Customer extends Model
 
     public function salesOrders()
     {
-        return $this->hasMany(SalesOrder::class);
+        return $this->hasMany(SalesOrder::class, 'customer_id');
     }
+
+
+    public function lastOrder()
+    {
+        return $this->salesOrders()->latest()->first();
+    }
+
+    public function isActive()
+    {
+        return $this->lastOrder() &&
+            $this->lastOrder()->created_at > now()->subDays(180);
+    }
+
 }

@@ -4,26 +4,22 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Customer>
- */
 class CustomerFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->phoneNumber(),
-            'address' => $this->faker->address(),
-            'is_active' => true,
-            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
-            'updated_at' => now(),
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->phoneNumber(),
+            'address' => fake()->address(),
+            'city' => fake()->city(),
+            'birth_date' => fake()->date(),
+            'vat_number' => fake()->unique()->numerify('###########'),
+            'segment' => fake()->randomElement(['Bronze', 'Silver', 'Gold']),
+            'loyalty_points' => fake()->numberBetween(0, 5000),
+            'status' => fake()->randomElement(['Active', 'Passive']),
+            'last_order_date' => fake()->dateTimeBetween('-1 year', 'now'),
         ];
     }
 }

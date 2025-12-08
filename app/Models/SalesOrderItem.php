@@ -30,7 +30,7 @@ class SalesOrderItem extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'order_id',
+        'sales_order_id',
         'product_id',
         'quantity',
         'price',
@@ -42,13 +42,9 @@ class SalesOrderItem extends Model
 
     public function order()
     {
-        return $this->belongsTo(\App\Models\SalesOrder::class, 'order_id');
+        return $this->belongsTo(SalesOrder::class, 'sales_order_id');
     }
 
-    public function salesOrder()
-    {
-        return $this->belongsTo(SalesOrder::class, 'order_id');
-    }
 
     public function product()
     {

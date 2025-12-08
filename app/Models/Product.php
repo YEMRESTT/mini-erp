@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-// BURASI ÖNEMLİ: İlişkili modeller eklenmeli
 use App\Models\ProductCategory;
 use App\Models\ProductImage;
 use App\Models\ProductPriceLog;
@@ -16,15 +15,17 @@ use App\Models\PurchaseOrderItem;
 class Product extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'sku',
         'barcode',
         'status',
         'description',
+        'price', // 🔥 Eksik olan bu satır eklendi!
     ];
 
-    public static function booted()
+    protected static function booted()
     {
         static::updated(function ($product) {
             if ($product->isDirty('price')) {
@@ -35,7 +36,6 @@ class Product extends Model
             }
         });
     }
-
 
     public function categories()
     {

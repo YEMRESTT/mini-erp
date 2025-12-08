@@ -10,17 +10,22 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\SalesOrderUIController;
 
-// Root → Dashboard yönlendirmesi
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-})->middleware(['auth', 'verified']);
 
-// Dashboard Controller route
+// Root yönlendirme → Dashboard
+Route::redirect('/', '/dashboard')->middleware(['auth', 'verified']);
+
+// Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+
+/* ==============================
+   Profil
+============================== */
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -29,10 +34,12 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// Google Auth Routes
-Route::get('/auth/google', function () {
-    return Socialite::driver('google')->redirect();
-})->name('google.login');
+
+/* ==============================
+   Google Login
+============================== */
+Route::get('/auth/google', fn() => Socialite::driver('google')->redirect())
+    ->name('google.login');
 
 Route::get('/auth/google/callback', function () {
     $googleUser = Socialite::driver('google')->user();
@@ -49,52 +56,47 @@ Route::get('/auth/google/callback', function () {
     return redirect('/dashboard');
 });
 
-// Sheets Test Route
-Route::get('/sheets-test', function () {
-    $credentialsPath = storage_path('app\mini-erp-479413-7a8dbcbc7e35.json');
 
-    if (!File::exists($credentialsPath)) {
-        return 'HATA: mini-erp-479413-7a8dbcbc7e35.json dosyası bulunamıyor.';
-    }
+/* ==============================
+   ERP ROUTES
+============================== */
+Route::middleware(['auth', 'verified'])->group(function () {
 
-    $credentialsContent = File::get($credentialsPath);
+    // Ürün Yönetimi
+    Route::resource('products', ProductController::class);
 
-    try {
-        $client = new Google\Client();
-        $client->setAuthConfig(json_decode($credentialsContent, true));
-        $client->setScopes([\Google\Service\Sheets::SPREADSHEETS]);
-        putenv("GOOGLE_APPLICATION_CREDENTIALS=$credentialsPath");
-    } catch (\Exception $e) {
-        return 'Google Client hatası: ' . $e->getMessage();
-    }
+    // Kategori Yönetimi
+    Route::resource('categories', ProductCategoryController::class);
 
-    $sheetId = env('GOOGLE_SHEET_ID');
+    // Müşteriler
+    Route::resource('customers', CustomerController::class);
 
-    Sheets::spreadsheet($sheetId)
-        ->sheet('Sheet1')
-        ->append([
-            ['ID', 'Name', 'Email'],
-            [1, 'Yusuf', 'test@example.com']
-        ]);
+    // CUSTOMER NOTES (USP)
+    Route::post('/customers/{customer}/notes', [CustomerController::class, 'addNote'])
+        ->name('customers.notes.store');
 
-    return 'Google Sheets bağlantısı çalıştı! 🚀';
-});
+    Route::patch('/customers/notes/{note}', [CustomerController::class, 'updateNote'])
+        ->name('customers.notes.update');
 
-// Product Routes
-Route::resource('products', ProductController::class);
+    Route::delete('/customers/notes/{note}', [CustomerController::class, 'deleteNote'])
+        ->name('customers.notes.delete');
 
-// Category Routes
-Route::resource('categories', ProductCategoryController::class);
 
-// Stock Routes
-Route::middleware('auth')->group(function () {
-    Route::get('stock', [StockController::class, 'index'])->name('stock.index');
-    Route::post('stock/{id}/update', [StockController::class, 'updateStock'])->name('stock.update');
-    Route::patch('stock/{id}/update-min-level', [StockController::class, 'updateMinLevel'])->name('stock.updateMin');
-});
+    // Stok Yönetimi
+    Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+    Route::post('/stock/{id}/update', [StockController::class, 'updateStock'])->name('stock.update');
+    Route::patch('/stock/{id}/update-min-level', [StockController::class, 'updateMinLevel'])->name('stock.updateMin');
 
-// Notification Routes
-Route::middleware('auth')->group(function () {
+    // Bildirimler
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/sales', [SalesOrderUIController::class, 'index'])->name('sales.index');
+        Route::get('/sales/create', [SalesOrderUIController::class, 'create'])->name('sales.create');
+        Route::post('/sales/store', [SalesOrderUIController::class, 'store'])->name('sales.store');
+    });
+
 });
+
