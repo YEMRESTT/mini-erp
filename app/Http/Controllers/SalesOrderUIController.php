@@ -52,13 +52,35 @@ class SalesOrderUIController extends Controller
         }
 
         $order->update([
-            'total' => SalesOrderItem::where('sales_order_id', $order->id)
-                ->sum(\DB::raw('price * quantity'))
+            'total' => $order->items()->sum(\DB::raw('price * quantity'))
         ]);
 
         return redirect()->route('sales.index')
             ->with('success', 'Satış siparişi oluşturuldu!');
     }
+
+    public function show($id)
+    {
+        $order = SalesOrder::with(['customer', 'items.product', 'logs'])
+            ->findOrFail($id);
+
+        return view('sales.show', compact('order'));
+    }
+
+
+    public function update(Request $request, SalesOrder $order)
+    {
+        $request->validate([
+            'status' => 'required|in:Pending,Approved,Completed'
+        ]);
+
+        $order->update([
+            'status' => $request->status
+        ]);
+
+        return back()->with('success', 'Sipariş durumu güncellendi! 🎯');
+    }
+
 
 
 

@@ -80,7 +80,7 @@ class SalesOrder extends Model
 
     public function logs()
     {
-        return $this->hasMany(SalesOrderLog::class);
+        return $this->hasMany(SalesOrderLog::class, 'order_id');
     }
 
     public function invoice()

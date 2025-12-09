@@ -32,6 +32,7 @@
                     <th class="p-2">Durum</th>
                     <th class="p-2">Toplam</th>
                     <th class="p-2">Tarih</th>
+                    <th class="p-2">Detay</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -42,6 +43,14 @@
                         <td class="p-2">{{ $order->status }}</td>
                         <td class="p-2">₺{{ number_format($order->total,2,',','.') }}</td>
                         <td class="p-2">{{ $order->created_at->format('d.m.Y H:i') }}</td>
+
+                        <td class="p-2">
+                            <a href="{{ route('sales.show', $order->id) }}"
+                               class="text-blue-600 hover:underline">
+                                Detay
+                            </a>
+                        </td>
+
                     </tr>
                 @endforeach
                 </tbody>

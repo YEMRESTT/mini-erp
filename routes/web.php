@@ -96,7 +96,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sales', [SalesOrderUIController::class, 'index'])->name('sales.index');
         Route::get('/sales/create', [SalesOrderUIController::class, 'create'])->name('sales.create');
         Route::post('/sales/store', [SalesOrderUIController::class, 'store'])->name('sales.store');
+
+        Route::get('/sales/{order}', [SalesOrderUIController::class, 'show'])->name('sales.show');
+        Route::put('/sales/{order}', [SalesOrderUIController::class, 'update'])->name('sales.update'); // 🔥 EKLENDİ
     });
+
 
 });
 
