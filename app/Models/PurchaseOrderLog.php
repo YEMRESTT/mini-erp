@@ -49,6 +49,13 @@ class PurchaseOrderLog extends Model
         'action',
     ];
 
+
+    public function order()
+    {
+        return $this->belongsTo(\App\Models\PurchaseOrder::class, 'order_id');
+    }
+
+
     public function purchaseOrder()
     {
         return $this->belongsTo(PurchaseOrder::class, 'order_id');

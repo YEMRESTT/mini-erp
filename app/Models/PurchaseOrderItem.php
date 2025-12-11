@@ -34,29 +34,21 @@ Depo teslim aldığında bu adet kadar stok artırılır (otomasyon ile).
 Ürünün satın alma fiyatı.
  */
 
-
 class PurchaseOrderItem extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'order_id',
+        'purchase_order_id',
         'product_id',
         'quantity',
         'price',
-    ];
-
-    protected $casts = [
-        'price' => 'decimal:2',
+        'line_total',
     ];
 
     public function order()
     {
-        return $this->belongsTo(\App\Models\PurchaseOrder::class, 'order_id');
-    }
-
-    public function purchaseOrder()
-    {
-        return $this->belongsTo(PurchaseOrder::class, 'order_id');
+        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
     public function product()
@@ -64,3 +56,4 @@ class PurchaseOrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 }
+

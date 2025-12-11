@@ -57,7 +57,7 @@
                     $level = $product->stock->min_level ?? 0;
                 @endphp
 
-                <span class="px-3 py-1 rounded text-white text-sm
+                <span class="px-3 py-1 rounded text-black
                     {{ $qty <= $level ? 'bg-red-600' : 'bg-green-600' }}">
                     {{ $qty }} Adet
                 </span>

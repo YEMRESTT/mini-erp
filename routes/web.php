@@ -12,6 +12,9 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SalesOrderUIController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PurchaseOrderUIController;
+
 
 
 // Root yönlendirme → Dashboard
@@ -93,13 +96,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     Route::middleware('auth')->group(function () {
+
         Route::get('/sales', [SalesOrderUIController::class, 'index'])->name('sales.index');
+
         Route::get('/sales/create', [SalesOrderUIController::class, 'create'])->name('sales.create');
+
         Route::post('/sales/store', [SalesOrderUIController::class, 'store'])->name('sales.store');
 
         Route::get('/sales/{order}', [SalesOrderUIController::class, 'show'])->name('sales.show');
-        Route::put('/sales/{order}', [SalesOrderUIController::class, 'update'])->name('sales.update'); // 🔥 EKLENDİ
+
+        Route::put('/sales/{order}', [SalesOrderUIController::class, 'update'])->name('sales.update');
+
+        Route::delete('/sales/{order}', [SalesOrderUIController::class, 'destroy'])->name('sales.destroy');
     });
+
+    Route::middleware('auth')->group(function () {
+
+        Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])
+            ->name('invoices.show');
+
+        Route::post('/sales/{order}/invoice', [InvoiceController::class, 'createFromOrder'])
+            ->name('sales.invoice.create');
+
+    });
+
+    Route::middleware('auth')->group(function () {
+
+        Route::get('/purchase', [PurchaseOrderUIController::class, 'index'])->name('purchase.index');
+        Route::get('/purchase/create', [PurchaseOrderUIController::class, 'create'])->name('purchase.create');
+        Route::post('/purchase/store', [PurchaseOrderUIController::class, 'store'])->name('purchase.store');
+
+        Route::get('/purchase/{order}', [PurchaseOrderUIController::class, 'show'])->name('purchase.show');
+        Route::put('/purchase/{order}', [PurchaseOrderUIController::class, 'update'])->name('purchase.update');
+        Route::delete('/purchase/{order}', [PurchaseOrderUIController::class, 'destroy'])->name('purchase.destroy');
+    });
+
+
 
 
 });

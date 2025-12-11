@@ -87,4 +87,9 @@ class SalesOrder extends Model
     {
         return $this->hasOne(Invoice::class);
     }
+    public function invoices()
+    {
+        return $this->hasMany(\App\Models\Invoice::class, 'sales_order_id');
+    }
+
 }

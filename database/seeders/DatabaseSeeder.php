@@ -83,21 +83,28 @@ class DatabaseSeeder extends Seeder
             ]);
         });
 
+
         // PURCHASE ORDERS
         PurchaseOrder::factory(20)->create()->each(function ($order) {
+
             $items = PurchaseOrderItem::factory(rand(1,4))->create([
-                'order_id' => $order->id
+                'purchase_order_id' => $order->id
             ]);
+
+            $total = $items->sum(fn($i) => $i->quantity * $i->price);
 
             $order->update([
                 'status' => fake()->randomElement(['Pending', 'Approved', 'Completed']),
-                'total_amount' => $items->sum(fn($i) => $i->quantity * $i->price)
+                'total_amount' => $total
             ]);
 
             PurchaseOrderLog::factory(2)->create([
                 'order_id' => $order->id
             ]);
         });
+
+
+
 
         // SALES ORDERS
         $customerIds = Customer::pluck('id')->toArray();

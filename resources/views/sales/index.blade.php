@@ -29,6 +29,8 @@
                 <tr class="bg-gray-100 text-center">
                     <th class="p-2">#</th>
                     <th class="p-2">Müşteri</th>
+                    <th class="p-2">İçerik</th>
+
                     <th class="p-2">Durum</th>
                     <th class="p-2">Toplam</th>
                     <th class="p-2">Tarih</th>
@@ -40,6 +42,22 @@
                     <tr class="text-center border-t">
                         <td class="p-2">{{ $order->id }}</td>
                         <td class="p-2">{{ $order->customer?->name ?? '---' }}</td>
+
+                        <td class="p-2">
+                            @php
+                                $items = $order->items->take(2);
+                            @endphp
+
+                            @foreach($items as $item)
+                                {{ $item->product->name ?? 'Ürün' }} ({{ $item->quantity }})@if(!$loop->last), @endif
+                            @endforeach
+
+                            @if($order->items->count() > 2)
+                                … +{{ $order->items->count() - 2 }} ürün
+                            @endif
+                        </td>
+
+
                         <td class="p-2">{{ $order->status }}</td>
                         <td class="p-2">₺{{ number_format($order->total,2,',','.') }}</td>
                         <td class="p-2">{{ $order->created_at->format('d.m.Y H:i') }}</td>
@@ -49,6 +67,15 @@
                                class="text-blue-600 hover:underline">
                                 Detay
                             </a>
+                            <form action="{{ route('sales.destroy', $order->id) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('Sipariş silinsin mi?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs">
+                                    Sil
+                                </button>
+                            </form>
                         </td>
 
                     </tr>

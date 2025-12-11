@@ -63,13 +63,7 @@ Genelde:
 class InvoiceItem extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'invoice_id',
-        'product_id',
-        'description',
-        'quantity',
-        'amount',
-    ];
+    protected $fillable = ['invoice_id', 'product_id', 'quantity', 'price'];
 
     protected $casts = [
         'amount' => 'decimal:2',

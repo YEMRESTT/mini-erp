@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sales_order_id')->constrained()->cascadeOnDelete();
-            $table->date('due_date');
-            $table->enum('status', ['Pending', 'Approved', 'Completed']);
+            $table->date('due_date')->nullable();
+            $table->enum('status', ['Pending', 'Approved', 'Completed'])->default('Pending');
             $table->timestamps();
         });
     }

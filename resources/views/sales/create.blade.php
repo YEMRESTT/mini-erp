@@ -32,7 +32,13 @@
         </button>
 
         <p class="text-lg font-bold mt-3">
-            Toplam: ₺<span id="total">0.00</span>
+            Ara Toplam: ₺<span id="subtotal">0.00</span>
+        </p>
+        <p class="text-sm mt-1">
+            KDV (%20): ₺<span id="vat">0.00</span>
+        </p>
+        <p class="text-lg font-bold mt-1">
+            Genel Toplam: ₺<span id="grandTotal">0.00</span>
         </p>
 
         <form action="{{ route('sales.store') }}" method="POST" id="submitForm">
@@ -47,43 +53,143 @@
     </div>
 
     {{-- Modal --}}
-    <div id="productModal"
-         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white p-4 w-96 rounded shadow">
-            <h3 class="text-lg font-semibold mb-3">Ürün Seç</h3>
+    <div id="productModal" style="display: none;"
+         class="fixed inset-0 bg-black/50 backdrop-blur-sm
+            flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 w-96 rounded shadow">
 
-            @foreach($products as $p)
-                <button class="w-full text-left p-2 border rounded mb-2 productItem"
-                        data-id="{{ $p->id }}"
-                        data-name="{{ $p->name }}"
-                        data-price="{{ $p->price }}">
-                    {{ $p->name }} — ₺{{ number_format($p->price,2,',','.') }}
+            <h3 class="text-lg font-semibold mb-4">Ürün Seç</h3>
+
+            {{-- Arama --}}
+            <input type="text" id="productSearch" placeholder="Ürün ara..."
+                   class="w-full border rounded p-2 mb-4">
+
+            {{-- Ürün Listesi --}}
+            <div id="productList" class="space-y-2 mb-4">
+                @foreach($products as $p)
+                    <button class="w-full text-left p-3 border rounded productItem hover:bg-gray-100"
+                            data-id="{{ $p->id }}"
+                            data-name="{{ $p->name }}"
+                            data-price="{{ $p->price }}">
+                        <div class="font-medium">{{ $p->name }}</div>
+                        <div class="text-sm text-gray-600">₺{{ number_format($p->price,2,',','.') }}</div>
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- Sayfalama --}}
+            <div class="flex items-center justify-between border-t pt-4">
+                <button id="prevBtn" onclick="prevPage()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                    ← Önceki
                 </button>
-            @endforeach
+                <span id="pageInfo" class="text-sm font-medium">Sayfa 1</span>
+                <button id="nextBtn" onclick="nextPage()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Sonraki →
+                </button>
+            </div>
 
             <button onclick="closeModal()"
-                    class="bg-red-500 text-black text-sm px-3 py-1 rounded mt-3">Kapat</button>
+                    class="bg-red-500 text-white text-sm px-4 py-2 rounded mt-4 w-full hover:bg-red-600">
+                Kapat
+            </button>
         </div>
     </div>
 
     <script>
         let items = [];
         const cart = document.getElementById('cart');
-        const totalEl = document.getElementById('total');
+        const subtotalEl = document.getElementById('subtotal');
+        const vatEl = document.getElementById('vat');
+        const grandTotalEl = document.getElementById('grandTotal');
+        const modal = document.getElementById('productModal');
 
-        document.getElementById('add-product-btn').onclick = () =>
-            document.getElementById('productModal').classList.remove('hidden');
+        const VAT_RATE = 0.20; // %20
 
+        // Sayfalama değişkenleri
+        let currentPage = 1;
+        const itemsPerPage = 5;
+        let allProducts = [];
+        let filteredProducts = [];
+
+        // Ürünleri yükle
+        document.querySelectorAll('.productItem').forEach(btn => {
+            allProducts.push({
+                element: btn,
+                id: btn.dataset.id,
+                name: btn.dataset.name.toLowerCase(),
+                displayName: btn.dataset.name,
+                price: btn.dataset.price
+            });
+        });
+
+        // Modal açma
+        document.getElementById('add-product-btn').onclick = () => {
+            filteredProducts = [...allProducts];
+            currentPage = 1;
+            document.getElementById('productSearch').value = '';
+            showPage();
+            modal.style.display = 'flex';
+        };
+
+        // Modal kapatma
         function closeModal() {
-            document.getElementById('productModal').classList.add('hidden');
+            modal.style.display = 'none';
         }
 
-        document.querySelectorAll('.productItem').forEach(btn => {
-            btn.onclick = () => {
+        // Arama
+        document.getElementById('productSearch').oninput = (e) => {
+            const search = e.target.value.toLowerCase();
+            filteredProducts = allProducts.filter(p => p.name.includes(search));
+            currentPage = 1;
+            showPage();
+        };
+
+        // Sayfa gösterme
+        function showPage() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageProducts = filteredProducts.slice(start, end);
+            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+            // Tüm ürünleri gizle
+            allProducts.forEach(p => p.element.style.display = 'none');
+
+            // Sadece bu sayfadakileri göster
+            pageProducts.forEach(p => p.element.style.display = 'block');
+
+            // Sayfa bilgisi
+            document.getElementById('pageInfo').innerText =
+                `Sayfa ${currentPage} / ${totalPages || 1}`;
+
+            // Butonları aktif/pasif yap
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                showPage();
+            }
+        }
+
+        // Ürün seçimi
+        allProducts.forEach(p => {
+            p.element.onclick = () => {
                 items.push({
-                    id: btn.dataset.id,
-                    name: btn.dataset.name,
-                    price: parseFloat(btn.dataset.price),
+                    id: p.id,
+                    name: p.displayName,
+                    price: parseFloat(p.price),
                     quantity: 1
                 });
                 renderCart();
@@ -91,26 +197,43 @@
             };
         });
 
+        // Sepet render
         function renderCart() {
             cart.innerHTML = '';
-            let total = 0;
+            let subtotal = 0;
+
             items.forEach((item, index) => {
-                total += item.price * item.quantity;
+                subtotal += item.price * item.quantity;
                 cart.innerHTML += `
                     <tr>
-                        <td>${item.name}</td>
-                        <td><input type="number" min="1" value="${item.quantity}"
-                            onchange="updateQuantity(${index}, this.value)" class="w-16 border rounded"></td>
-                        <td>₺${item.price.toFixed(2)}</td>
-                        <td><button onclick="removeItem(${index})" class="text-red-600">X</button></td>
+                        <td class="p-2">${item.name}</td>
+                        <td class="p-2">
+                            <input type="number" min="1" value="${item.quantity}"
+                                onchange="updateQuantity(${index}, this.value)"
+                                class="w-16 border rounded text-center p-1">
+                        </td>
+                        <td class="p-2">₺${item.price.toFixed(2)}</td>
+                        <td class="p-2">
+                            <button type="button"
+                                    onclick="removeItem(${index})"
+                                    class="text-red-600 font-bold hover:text-red-800">
+                                X
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
-            totalEl.innerText = total.toFixed(2);
+
+            const vat = subtotal * VAT_RATE;
+            const grand = subtotal + vat;
+
+            subtotalEl.innerText = subtotal.toFixed(2);
+            vatEl.innerText = vat.toFixed(2);
+            grandTotalEl.innerText = grand.toFixed(2);
         }
 
         function updateQuantity(i, val) {
-            items[i].quantity = parseInt(val);
+            items[i].quantity = parseInt(val || 1);
             renderCart();
         }
 

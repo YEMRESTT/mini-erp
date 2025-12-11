@@ -10,78 +10,128 @@ use Illuminate\Http\Request;
 
 class SalesOrderUIController extends Controller
 {
+    /** 📌 Satış siparişleri listesi */
     public function index()
     {
-        $orders = SalesOrder::with('customer')->latest()->paginate(10);
+        $orders = SalesOrder::with('customer')
+            ->latest()
+            ->paginate(15);
+
         return view('sales.index', compact('orders'));
     }
 
+    /** 📌 Yeni satış siparişi formu */
     public function create()
     {
         $customers = Customer::all();
-        $products = Product::with('stock')->get();
+        $products = Product::all();
+
         return view('sales.create', compact('customers', 'products'));
     }
 
+    /** 📌 Satış siparişi kaydetme */
     public function store(Request $request)
     {
-        $items = json_decode($request->items, true); // 🔥 ZORUNLU! (string → array)
+        // Validasyon
+        $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'items' => 'required|json'
+        ]);
 
-        if (!$items || !is_array($items)) {
-            return back()->with('error', 'Lütfen ürün ekleyin!');
+        $items = json_decode($request->items, true) ?? [];
+
+        if (empty($items)) {
+            return back()->with('error', 'Sepete ürün eklemeden sipariş oluşturamazsın.');
         }
 
+        // 🟢 1) Önce ara toplam hesapla
+        $subtotal = 0;
+        foreach ($items as $item) {
+            $qty = max(1, intval($item['quantity'] ?? 1));
+            $price = floatval($item['price'] ?? 0);
+            $subtotal += ($price * $qty);
+        }
+
+        // KDV hesapla
+        $vat = $subtotal * 0.20; // %20 KDV
+        $total = $subtotal + $vat;
+
+        // 🟢 2) Sales order oluştur
         $order = SalesOrder::create([
             'customer_id' => $request->customer_id,
             'status' => 'Pending',
-            'total' => 0
+            'total' => $subtotal, // Ara toplam (KDV'siz)
         ]);
 
+        // 🟢 3) Satırları ekle ve stok düş
         foreach ($items as $item) {
             $product = Product::find($item['id']);
+            if (!$product) continue;
 
+            $qty = max(1, intval($item['quantity'] ?? 1));
+            $price = floatval($item['price'] ?? 0);
+
+            // ✅ sales_order_id ekleniyor
             SalesOrderItem::create([
-                'sales_order_id' => $order->id, // 🔥 artık NULL değil!
+                'sales_order_id' => $order->id, // ✅ ÖNEMLİ: Bu eksikti
                 'product_id' => $product->id,
-                'quantity' => $item['quantity'],
-                'price' => $product->price,
+                'quantity' => $qty,
+                'price' => $price,
             ]);
 
-            // 🔥 Stok düş
-            $product->stock->decrement('quantity', $item['quantity']);
+            // 🟩 Stok azalt
+            if ($product->stock) {
+                $product->stock->decrement('quantity', $qty);
+            }
         }
 
-        $order->update([
-            'total' => $order->items()->sum(\DB::raw('price * quantity'))
-        ]);
-
-        return redirect()->route('sales.index')
-            ->with('success', 'Satış siparişi oluşturuldu!');
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Satış siparişi oluşturuldu! Toplam: ₺' . number_format($total, 2));
     }
 
-    public function show($id)
+    /** 📌 Satış siparişi detayı */
+    public function show(SalesOrder $order)
     {
-        $order = SalesOrder::with(['customer', 'items.product', 'logs'])
-            ->findOrFail($id);
+        $order->load(['customer', 'items.product']);
 
-        return view('sales.show', compact('order'));
+        // Ara toplam
+        $subtotal = $order->items->sum(function($item) {
+            return $item->price * $item->quantity;
+        });
+
+        // KDV ve genel toplam
+        $vat = $subtotal * 0.20;
+        $grandTotal = $subtotal + $vat;
+
+        return view('sales.show', compact('order', 'subtotal', 'vat', 'grandTotal'));
     }
 
-
+    /** 📌 Durum güncelleme */
     public function update(Request $request, SalesOrder $order)
     {
         $request->validate([
-            'status' => 'required|in:Pending,Approved,Completed'
+            'status' => 'required|in:Pending,Approved,Completed,Cancelled',
         ]);
 
-        $order->update([
-            'status' => $request->status
-        ]);
+        $order->update(['status' => $request->status]);
 
-        return back()->with('success', 'Sipariş durumu güncellendi! 🎯');
+        return back()->with('success', 'Durum güncellendi!');
     }
 
+    /** 📌 Sipariş silme */
+    public function destroy(SalesOrder $order)
+    {
+        // Stok iade
+        foreach ($order->items as $item) {
+            if ($item->product && $item->product->stock) {
+                $item->product->stock->increment('quantity', $item->quantity);
+            }
+        }
 
+        $order->delete();
 
-
+        return redirect()->route('sales.index')
+            ->with('success', 'Sipariş silindi ve stok iade edildi!');
+    }
 }

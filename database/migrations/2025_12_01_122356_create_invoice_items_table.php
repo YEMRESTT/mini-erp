@@ -13,21 +13,13 @@ return new class extends Migration
     {
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('invoice_id')
-                ->constrained('invoices')
-                ->onDelete('cascade');
-
-            $table->foreignId('product_id')
-                ->constrained('products')
-                ->onDelete('cascade');  // 👈 ZORUNLU
-
-            $table->string('description')->nullable();
-            $table->integer('quantity')->default(1);
-            $table->decimal('amount', 10, 2)->default(0);
-
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete()->onDelete('cascade');
+            $table->integer('quantity');
+            $table->decimal('price', 10, 2);
             $table->timestamps();
         });
+
     }
 
     /**
@@ -38,3 +30,6 @@ return new class extends Migration
         Schema::dropIfExists('invoice_items');
     }
 };
+
+
+

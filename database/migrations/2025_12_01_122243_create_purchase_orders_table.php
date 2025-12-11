@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
             $table->date('expected_date')->nullable();
             $table->enum('status', ['Pending', 'Approved', 'Completed'])->default('pending');
+            $table->decimal('total', 12, 2)->default(0); // sadece total
             $table->timestamps();
         });
     }

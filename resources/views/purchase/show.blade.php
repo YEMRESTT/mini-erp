@@ -1,30 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="text-xl font-bold text-gray-800">
-            Sipariş Detayı #{{ $order->id }}
+            Satın Alma Siparişi #{{ $order->id }}
         </h2>
     </x-slot>
 
     <div class="max-w-5xl mx-auto py-6 px-4 space-y-6">
 
-        {{-- Üst Kart: Müşteri + Durum + Tutarlar --}}
+        {{-- ÜST KART  --}}
         <div class="bg-white p-6 rounded shadow space-y-3">
             <div class="flex justify-between items-start">
+
+                {{-- TEDARİKÇİ --}}
                 <div>
-                    <p class="text-sm text-gray-500">Müşteri</p>
+                    <p class="text-sm text-gray-500">Tedarikçi</p>
                     <p class="text-lg font-semibold">
-                        {{ $order->customer?->name ?? '—' }}
+                        {{ $order->supplier?->name ?? '—' }}
                     </p>
-                    <p class="text-xs text-gray-500">
+
+                    <p class="text-xs text-gray-500 mt-1">
                         Tarih: {{ $order->created_at->format('d.m.Y H:i') }}
                     </p>
                 </div>
 
-                {{-- Durum Güncelleme --}}
+                {{-- DURUM --}}
                 <div class="text-right">
                     <p class="text-sm text-gray-500 mb-1">Durum</p>
 
-                    <form action="{{ route('sales.update', $order->id) }}"
+                    <form action="{{ route('purchase.update', $order->id) }}"
                           method="POST"
                           class="flex items-center gap-2">
                         @csrf
@@ -32,7 +35,7 @@
 
                         <select name="status"
                                 class="border rounded px-2 py-1 text-sm">
-                            @foreach(['Pending','Approved','Invoiced','Completed'] as $status)
+                            @foreach(['Pending','Approved','Completed'] as $status)
                                 <option value="{{ $status }}"
                                     {{ $order->status === $status ? 'selected' : '' }}>
                                     {{ $status }}
@@ -40,39 +43,35 @@
                             @endforeach
                         </select>
 
-                        <button class="bg-blue-600 text-black text-xs px-3 py-1 rounded hover:bg-blue-700">
+                        <button class="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700">
                             Güncelle
                         </button>
                     </form>
                 </div>
             </div>
 
-            {{-- Tutarlar --}}
-            <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+            {{-- TUTARLAR --}}
+            <div class="grid grid-cols-2 gap-4 mt-4 text-sm">
                 <div class="p-3 bg-gray-50 rounded border">
                     <p class="text-gray-500">Ara Toplam</p>
                     <p class="text-lg font-semibold">
-                        ₺{{ number_format($subtotal,2,',','.') }}
+                        ₺{{ number_format($total, 2, ',', '.') }}
                     </p>
                 </div>
-                <div class="p-3 bg-gray-50 rounded border">
-                    <p class="text-gray-500">KDV (%20)</p>
-                    <p class="text-lg font-semibold">
-                        ₺{{ number_format($vatAmount,2,',','.') }}
-                    </p>
-                </div>
+
                 <div class="p-3 bg-gray-50 rounded border">
                     <p class="text-gray-500">Genel Toplam</p>
                     <p class="text-lg font-semibold text-green-700">
-                        ₺{{ number_format($grandTotal,2,',','.') }}
+                        ₺{{ number_format($total, 2, ',', '.') }}
                     </p>
                 </div>
             </div>
         </div>
 
-        {{-- Sipariş Satırları --}}
+
+        {{-- SATIRLAR --}}
         <div class="bg-white p-6 rounded shadow">
-            <h3 class="text-lg font-semibold mb-3">Sipariş Satırları</h3>
+            <h3 class="text-lg font-semibold mb-3">Sipariş Kalemleri</h3>
 
             @if($order->items->count())
                 <table class="w-full text-sm text-gray-700 border">
@@ -81,32 +80,39 @@
                         <th class="p-2">Ürün</th>
                         <th class="p-2">Adet</th>
                         <th class="p-2">Birim Fiyat</th>
-                        <th class="p-2">Satır Toplam</th>
+                        <th class="p-2">Toplam</th>
                     </tr>
                     </thead>
+
                     <tbody>
-                    @foreach($order->items as $row)
+                    @foreach($order->items as $item)
                         <tr class="text-center border-t">
-                            <td class="p-2">{{ $row->product?->name ?? '—' }}</td>
-                            <td class="p-2">{{ $row->quantity }}</td>
                             <td class="p-2">
-                                ₺{{ number_format($row->price,2,',','.') }}
+                                {{ $item->product?->name ?? '—' }}
                             </td>
+
                             <td class="p-2">
-                                ₺{{ number_format($row->price * $row->quantity,2,',','.') }}
+                                {{ $item->quantity }}
                             </td>
+
+                            <td class="p-2">
+                                ₺{{ number_format($item->price, 2, ',', '.') }}
+                            </td>
+
+                            <td class="p-2">₺{{ number_format($item->price * $item->quantity, 2, ',', '.') }}</td>
+
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
             @else
-                <p class="text-gray-500 text-sm">Bu siparişte satır bulunmuyor.</p>
+                <p class="text-gray-500 text-sm">Bu siparişte ürün yok.</p>
             @endif
         </div>
 
-        {{-- Hareket Logları --}}
+        {{-- LOG KAYITLARI --}}
         <div class="bg-white p-6 rounded shadow">
-            <h3 class="text-lg font-semibold mb-3">Sipariş Hareketleri</h3>
+            <h3 class="text-lg font-semibold mb-3">Tarihçe</h3>
 
             @if($order->logs->count())
                 <ul class="space-y-2 text-sm text-gray-700">
@@ -123,28 +129,6 @@
                 <p class="text-gray-500 text-sm">Henüz log kaydı yok.</p>
             @endif
         </div>
-
-        @if(!$order->invoice)
-            <form action="{{ route('sales.invoice.create', $order->id) }}" method="POST" class="mt-3">
-                @csrf
-                <button class="bg-gradient-to-r from-green-600 to-green-700 text-black text-sm px-6 py-3 rounded-lg
-               hover:from-green-700 hover:to-green-800
-               shadow-lg hover:shadow-xl
-               transform hover:scale-105 transition-all duration-200
-               font-semibold flex items-center gap-2 justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Fatura Oluştur
-                </button>
-            </form>
-        @else
-            <a href="{{ route('invoices.show', $order->invoice->id) }}"
-               class="inline-block mt-3 bg-blue-600 text-black px-4 py-2 rounded hover:bg-blue-700">
-                Faturayı Görüntüle
-            </a>
-        @endif
-
 
     </div>
 </x-app-layout>

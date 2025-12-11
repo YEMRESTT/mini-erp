@@ -82,10 +82,13 @@ Cron job: gecikmiş sipariş kontrolü tam buradan çalışır.
 class PurchaseOrder extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'supplier_id',
-        'expected_date',
         'status',
+        'subtotal',
+        'vat_total',
+        'total',
     ];
 
     protected $casts = [
@@ -99,11 +102,23 @@ class PurchaseOrder extends Model
 
     public function items()
     {
-        return $this->hasMany(PurchaseOrderItem::class, 'order_id');
+        return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_id');
     }
 
     public function logs()
     {
         return $this->hasMany(PurchaseOrderLog::class, 'order_id');
     }
+
+    public function getSubtotalAttribute()
+    {
+        return $this->total_amount;
+    }
+
+    public function getTotalAttribute()
+    {
+        return $this->total_amount;
+    }
+
 }
+
