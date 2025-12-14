@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
@@ -55,6 +56,8 @@ class InvoiceController extends Controller
     }
 
 
+
+
     public function show(Invoice $invoice)
     {
         $invoice->load('items.product', 'order.customer');
@@ -75,6 +78,51 @@ class InvoiceController extends Controller
             'grandTotal'
         ));
     }
+
+
+
+
+
+    public function pdf(Invoice $invoice)
+    {
+        $invoice->load(['items.product', 'order.customer']);
+
+        // Hesaplar (KDV YOK)
+        $subtotal = $invoice->items->sum(fn($i) => $i->price * $i->quantity);
+        $total    = $subtotal;
+
+        $pdf = Pdf::loadView('invoices.pdf', compact(
+            'invoice',
+            'subtotal',
+            'total'
+        ))->setPaper('a4');
+
+        return $pdf->download(
+            'Fatura_'.$invoice->id.'.pdf'
+        );
+    }
+
+
+
+    public function viewPdf(Invoice $invoice)
+    {
+        $invoice->load(['items.product', 'order.customer']);
+
+        // KDV yok
+        $subtotal = $invoice->items->sum(fn($i) => $i->price * $i->quantity);
+        $total    = $subtotal;
+
+        $pdf = Pdf::loadView('invoices.pdf', compact(
+            'invoice',
+            'subtotal',
+            'total'
+        ))->setPaper('a4');
+
+        // 🔥 TARAYICIDA GÖSTER
+        return $pdf->stream('Fatura_'.$invoice->id.'.pdf');
+    }
+
+
 
 
 }

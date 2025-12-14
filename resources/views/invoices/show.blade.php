@@ -92,6 +92,28 @@
                         ₺{{ number_format($grandTotal, 2, ',', '.') }}
                     </p>
                 </div>
+
+                <a href="{{ route('invoices.pdf', $invoice->id) }}"
+                   class="inline-block mt-4 bg-red-600 text-white px-4 py-2 rounded
+          hover:bg-red-700">
+                    PDF Olarak İndir
+                </a>
+
+
+                <div class="flex gap-3 mt-4">
+
+                    {{-- PDF GÖRÜNTÜLE --}}
+                    <a href="{{ route('invoices.pdf.view', $invoice->id) }}"
+                       target="_blank"
+                       class="bg-gray-700 text-black px-4 py-2 rounded
+              hover:bg-gray-800">
+                        PDF Görüntüle
+                    </a>
+
+
+                </div>
+
+
             </div>
 
         </div>

@@ -18,6 +18,12 @@
                         {{ $order->supplier?->name ?? '—' }}
                     </p>
 
+                    <a href="{{ route('suppliers.show',  $order->supplier->id) }}"
+                       class="text-blue-600 hover:underline">
+                        Detay
+                    </a>
+
+
                     <p class="text-xs text-gray-500 mt-1">
                         Tarih: {{ $order->created_at->format('d.m.Y H:i') }}
                     </p>
@@ -33,17 +39,18 @@
                         @csrf
                         @method('PUT')
 
-                        <select name="status"
-                                class="border rounded px-2 py-1 text-sm">
+                        <select name="status" class="border rounded px-2 py-1 text-sm">
                             @foreach(['Pending','Approved','Completed'] as $status)
                                 <option value="{{ $status }}"
-                                    {{ $order->status === $status ? 'selected' : '' }}>
+                                    {{ $order->status === $status ? 'selected' : '' }}
+                                    {{ $order->status === 'Completed' ? 'disabled' : '' }}>
                                     {{ $status }}
                                 </option>
                             @endforeach
                         </select>
 
-                        <button class="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700">
+
+                        <button class="bg-blue-600 text-blak text-xs px-3 py-1 rounded hover:bg-blue-700">
                             Güncelle
                         </button>
                     </form>
@@ -51,11 +58,11 @@
             </div>
 
             {{-- TUTARLAR --}}
-            <div class="grid grid-cols-2 gap-4 mt-4 text-sm">
+            <div class="grid grid-cols-2 gap-4 mt-4">
                 <div class="p-3 bg-gray-50 rounded border">
                     <p class="text-gray-500">Ara Toplam</p>
                     <p class="text-lg font-semibold">
-                        ₺{{ number_format($total, 2, ',', '.') }}
+                        ₺{{ number_format($subtotal, 2, ',', '.') }}
                     </p>
                 </div>
 
@@ -87,23 +94,21 @@
                     <tbody>
                     @foreach($order->items as $item)
                         <tr class="text-center border-t">
-                            <td class="p-2">
-                                {{ $item->product?->name ?? '—' }}
-                            </td>
+                            <td class="p-2">{{ $item->product?->name ?? '—' }}</td>
 
-                            <td class="p-2">
-                                {{ $item->quantity }}
-                            </td>
+                            <td class="p-2">{{ $item->quantity }}</td>
 
                             <td class="p-2">
                                 ₺{{ number_format($item->price, 2, ',', '.') }}
                             </td>
 
-                            <td class="p-2">₺{{ number_format($item->price * $item->quantity, 2, ',', '.') }}</td>
-
+                            <td class="p-2 font-semibold">
+                                ₺{{ number_format($item->quantity * $item->price, 2, ',', '.') }}
+                            </td>
                         </tr>
                     @endforeach
                     </tbody>
+
                 </table>
             @else
                 <p class="text-gray-500 text-sm">Bu siparişte ürün yok.</p>

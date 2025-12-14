@@ -93,19 +93,22 @@ class SalesOrderUIController extends Controller
     /** 📌 Satış siparişi detayı */
     public function show(SalesOrder $order)
     {
-        $order->load(['customer', 'items.product']);
+        $order->load(['customer', 'items.product', 'logs']);
 
-        // Ara toplam
-        $subtotal = $order->items->sum(function($item) {
-            return $item->price * $item->quantity;
-        });
+        // 🧮 Hesaplar (HER ZAMAN)
+        $subtotal   = $order->items->sum(fn($i) => $i->price * $i->quantity);
+        $vatRate    = 0.20;
+        $vatAmount  = round($subtotal * $vatRate, 2);
+        $grandTotal = $subtotal + $vatAmount;
 
-        // KDV ve genel toplam
-        $vat = $subtotal * 0.20;
-        $grandTotal = $subtotal + $vat;
-
-        return view('sales.show', compact('order', 'subtotal', 'vat', 'grandTotal'));
+        return view('sales.show', compact(
+            'order',
+            'subtotal',
+            'vatAmount',
+            'grandTotal'
+        ));
     }
+
 
     /** 📌 Durum güncelleme */
     public function update(Request $request, SalesOrder $order)

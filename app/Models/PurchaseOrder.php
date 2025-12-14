@@ -105,6 +105,14 @@ class PurchaseOrder extends Model
         return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_id');
     }
 
+    public function getCalculatedTotalAttribute()
+    {
+        return $this->items->sum(function ($item) {
+            return $item->quantity * $item->price;
+        });
+    }
+
+
     public function logs()
     {
         return $this->hasMany(PurchaseOrderLog::class, 'order_id');

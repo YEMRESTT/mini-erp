@@ -29,68 +29,74 @@
                 <tr class="bg-gray-100 text-center">
                     <th class="p-2">#</th>
                     <th class="p-2">Tedarikçi</th>
-                    <th class="p-2">Durum</th>
-                    <th class="p-2">Toplam</th>
                     <th class="p-2">Tarih</th>
-                    <th class="p-2">İşlem</th>
+                    <th class="p-2">Toplam</th>
+                    <th class="p-2">Durum</th>
+                    <th class="p-2">İşlemler</th>
                 </tr>
                 </thead>
 
+
                 <tbody>
                 @foreach($orders as $order)
-                    <tr class="text-center border-t hover:bg-gray-50">
-                        <td class="p-2">{{ $order->id }}</td>
+                    <tr class="text-center border-t">
+
+                        <td class="p-2">#{{ $order->id }}</td>
 
                         <td class="p-2">
                             {{ $order->supplier?->name ?? '—' }}
                         </td>
 
-                        {{-- DURUM ROZETİ --}}
+                        <td class="p-2">
+                            {{ $order->created_at->format('d.m.Y') }}
+                        </td>
+
+                        {{-- 🔥 DOĞRU TOPLAM --}}
+                        <td class="p-2 font-semibold">
+                            ₺{{ number_format($order->calculated_total, 2, ',', '.') }}
+                        </td>
+
+                        {{-- STATUS --}}
                         <td class="p-2">
                             @php
                                 $colors = [
                                     'Pending'   => 'bg-yellow-100 text-yellow-800',
                                     'Approved'  => 'bg-blue-100 text-blue-800',
-                                    'Completed' => 'bg-green-100 text-green-800'
+                                    'Completed' => 'bg-green-100 text-green-800',
                                 ];
                             @endphp
 
-                            <span class="px-2 py-1 rounded text-xs font-semibold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-800' }}">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $colors[$order->status] ?? 'bg-gray-100' }}">
                                 {{ $order->status }}
                             </span>
                         </td>
 
-                        <td class="p-2 font-semibold">
-                            ₺{{ number_format($order->total, 2, ',', '.') }}
-                        </td>
+                        {{-- AKSİYONLAR --}}
+                        <td class="p-2 flex justify-center gap-2">
+                            <a href="{{ route('purchase.show', $order->id) }}"
+                               class="bg-blue-600 text-black text-xs px-3 py-1 rounded hover:bg-blue-700">
+                                Detay
+                            </a>
 
-                        <td class="p-2">
-                            {{ $order->created_at->format('d.m.Y H:i') }}
-                        </td>
-
-                        <td class="p-2">
-                            <div class="flex justify-center gap-2">
-                                {{-- DETAY --}}
-                                <a href="{{ route('purchase.show', $order->id) }}"
-                                   class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-800 text-xs">
-                                    Detay
-                                </a>
-
-                                {{-- SİL --}}
-                                <form method="POST"
-                                      action="{{ route('purchase.destroy', $order->id) }}"
-                                      onsubmit="return confirm('Bu siparişi silmek istediğine emin misin?')">
+                            @if($order->status !== 'Completed')
+                                <form action="{{ route('purchase.destroy', $order->id) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Silmek istediğine emin misin?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-xs">
+
+                                    <button class="text-red-600 hover:underline text-sm">
                                         Sil
                                     </button>
                                 </form>
-                            </div>
+                            @endif
+
                         </td>
+
                     </tr>
                 @endforeach
                 </tbody>
+
             </table>
 
             {{-- SAYFALAMA --}}

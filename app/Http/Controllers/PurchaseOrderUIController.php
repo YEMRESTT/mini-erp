@@ -14,12 +14,23 @@ class PurchaseOrderUIController extends Controller
     /** 📌 Satın alma listesi */
     public function index()
     {
-        $orders = PurchaseOrder::with('supplier')
+        $orders = PurchaseOrder::with(['supplier', 'items'])
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
+
+        // 🔥 HER SİPARİŞ İÇİN TOPLAM HESAP
+        $orders->getCollection()->transform(function ($order) {
+            $order->calculated_total = $order->items->sum(function ($item) {
+                return $item->quantity * $item->price;
+            });
+
+            return $order;
+        });
 
         return view('purchase.index', compact('orders'));
     }
+
+
 
     /** 📌 Yeni satın alma formu */
     public function create()
@@ -101,59 +112,108 @@ class PurchaseOrderUIController extends Controller
     {
         $order->load(['supplier', 'items.product', 'logs']);
 
-        // Toplam hesapla
-        $total = $order->items->sum(function($item) {
-            return $item->price * $item->quantity;
+        // 🧮 Ara toplam = satırların toplamı
+        $subtotal = $order->items->sum(function ($item) {
+            return $item->quantity * $item->price;
         });
 
-        return view('purchase.show', compact('order', 'total'));
+        // KDV YOK
+        $total = $subtotal;
+
+        return view('purchase.show', compact(
+            'order',
+            'subtotal',
+            'total'
+        ));
     }
+
 
     /** 📌 Durum güncelleme */
     public function update(Request $request, PurchaseOrder $order)
     {
         $request->validate([
-            'status' => 'required|in:Pending,Approved,Completed',
+            'status' => 'required|in:Pending,Approved,Completed'
         ]);
 
-        $old = $order->status;
-        $new = $request->status;
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
 
-        if ($old !== $new) {
+        // ❌ Completed geri alınamaz
+        if ($oldStatus === 'Completed' && $newStatus !== 'Completed') {
+            return back()->with('error', 'Completed sipariş geri alınamaz.');
+        }
 
-            $order->update(['status' => $new]);
+        // 🔥 Pending → Approved = STOK ARTIR
+        if ($oldStatus === 'Pending' && $newStatus === 'Approved') {
+
+            foreach ($order->items as $item) {
+                if ($item->product && $item->product->stock) {
+                    $item->product->stock->increment('quantity', $item->quantity);
+                }
+            }
 
             PurchaseOrderLog::create([
                 'order_id' => $order->id,
-                'user_id'  => auth()->id() ?? 1,
-                'action'   => "Durum $old → $new olarak güncellendi",
+                'user_id'  => auth()->id(),
+                'action'   => 'Sipariş onaylandı, stoklar artırıldı',
             ]);
         }
 
-        return back()->with('success', 'Durum güncellendi!');
+        // 🟢 Approved → Completed
+        if ($oldStatus === 'Approved' && $newStatus === 'Completed') {
+            PurchaseOrderLog::create([
+                'order_id' => $order->id,
+                'user_id'  => auth()->id(),
+                'action'   => 'Sipariş tamamlandı',
+            ]);
+        }
+
+        $order->update([
+            'status' => $newStatus
+        ]);
+
+        return back()->with('success', 'Sipariş durumu güncellendi.');
     }
+
+
 
     /** 📌 Sipariş silme */
     public function destroy(PurchaseOrder $order)
     {
-        // Stok iade
-        foreach ($order->items as $item) {
-            if ($item->product && $item->product->stock) {
-                $item->product->stock->decrement('quantity', $item->quantity);
-            }
+        // ❌ Completed silinemez
+        if ($order->status === 'Completed') {
+            return back()->with('error', 'Completed sipariş silinemez.');
         }
 
-        // Log'u önce yaz
-        PurchaseOrderLog::create([
-            'order_id' => $order->id,
-            'user_id'  => auth()->id(),
-            'action'   => 'Satın alma siparişi silindi ve stok geri çekildi',
-        ]);
+        // 🔁 Approved ise stok geri düş
+        if ($order->status === 'Approved') {
+            foreach ($order->items as $item) {
+                if ($item->product && $item->product->stock) {
+                    $item->product->stock->decrement('quantity', $item->quantity);
+                }
+            }
 
-        // Siparişi sil
+            PurchaseOrderLog::create([
+                'order_id' => $order->id,
+                'user_id'  => auth()->id(),
+                'action'   => 'Sipariş silindi, stoklar geri çekildi',
+            ]);
+        }
+
+        // 🟡 Pending ise sadece sil
+        if ($order->status === 'Pending') {
+            PurchaseOrderLog::create([
+                'order_id' => $order->id,
+                'user_id'  => auth()->id(),
+                'action'   => 'Pending sipariş silindi',
+            ]);
+        }
+
         $order->delete();
 
-        return redirect()->route('purchase.index')
-            ->with('success', 'Sipariş silindi!');
+        return redirect()
+            ->route('purchase.index')
+            ->with('success', 'Satın alma siparişi silindi.');
     }
+
 }

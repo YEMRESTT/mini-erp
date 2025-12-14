@@ -14,6 +14,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SalesOrderUIController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PurchaseOrderUIController;
+use App\Http\Controllers\SupplierController;
 
 
 
@@ -112,8 +113,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('auth')->group(function () {
 
-        Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])
-            ->name('invoices.show');
+        Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+        Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+        Route::get('/invoices/{invoice}/pdf/view', [InvoiceController::class, 'viewPdf'])->name('invoices.pdf.view');
+
 
         Route::post('/sales/{order}/invoice', [InvoiceController::class, 'createFromOrder'])
             ->name('sales.invoice.create');
@@ -131,6 +134,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/purchase/{order}', [PurchaseOrderUIController::class, 'destroy'])->name('purchase.destroy');
     });
 
+    Route::middleware('auth')->group(function () {
+
+        Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])
+            ->name('suppliers.show');
+
+
+    });
 
 
 
