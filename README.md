@@ -1,59 +1,205 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Mini ERP Sistemi (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-## About Laravel
+Bu proje, **Laravel** framework'ü kullanılarak geliştirilmiş, modern ve modüler bir **Mini ERP (Kurumsal Kaynak Planlama)** uygulamasıdır. Küçük ve orta ölçekli işletmelerin temel süreçlerini (Stok, Satış, Satın Alma, Müşteri ve Fatura) dijital ortamda yönetmelerini sağlamak amacıyla tasarlanmıştır.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Akademik bir bitirme projesi veya kurumsal bir portföy projesi olarak, gerçek dünya senaryoları ve iş akışları (Business Logic) dikkate alınarak geliştirilmiştir.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Özellikler
 
-## Learning Laravel
+### 🔐 Kimlik Doğrulama & Güvenlik
+*   **Güvenli Giriş:** Standart e-posta/şifre girişi ve kayıt sistemi.
+*   **Google ile Giriş:** Laravel Socialite entegrasyonu ile hızlı Google oturum açma.
+*   **Rol Bazlı Yetkilendirme (RBAC):** Yönetici ve standart kullanıcı rolleri ile erişim kontrolü.
+*   **Profil Yönetimi:** Kullanıcı bilgileri güncelleme ve güvenli şifre yönetimi.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 📊 Yönetim Paneli (Dashboard)
+*   **Genel Bakış:** Toplam satış, aylık gelir, aktif siparişler ve kritik stok sayıları.
+*   **Grafikler:** Haftalık ve aylık satış performans grafikleri.
+*   **Bildirim Merkezi:** Düşük stok, yeni sipariş ve sistem uyarıları için canlı bildirim alanı.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 📦 Stok ve Ürün Yönetimi
+*   **Ürün Kataloğu:** Ürün ekleme, düzenleme, silme ve listeleme.
+*   **Kategori Yapısı:** Ürünleri kategorilere ayırma ve filtreleme.
+*   **Stok Takibi:** Anlık stok miktarı görüntüleme, manuel stok girişi/çıkışı.
+*   **Kritik Stok Uyarısı:** Belirlenen minimum seviyenin altına düşen ürünler için otomatik uyarılar.
+*   **Fiyat Geçmişi:** Ürün fiyat değişikliklerinin loglanması ve takibi.
+*   **Barkod/QR:** Ürünler için barkod altyapısı desteği.
 
-## Laravel Sponsors
+### 👥 Müşteri İlişkileri (CRM)
+*   **Müşteri Yönetimi:** Detaylı müşteri profilleri oluşturma ve düzenleme.
+*   **Sipariş Geçmişi:** Müşterinin geçmiş siparişlerini ve toplam harcamasını görüntüleme.
+*   **Müşteri Notları:** Müşterilerle ilgili özel notlar ekleyebilme (Örn: "Özel indirim bekliyor").
+*   **Pasif Müşteri Analizi:** Uzun süredir işlem yapmayan müşterilerin tespiti.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### � Satış Yönetimi
+*   **Sipariş Oluşturma:** Kullanıcı dostu arayüz ile hızlı satış siparişi oluşturma.
+*   **Sepet Mantığı:** Birden fazla ürünü tek siparişte toplayabilme.
+*   **Sipariş Durumları:** Bekliyor, Onaylandı, Hazırlanıyor, Teslim Edildi gibi süreç takibi.
+*   **Dinamik Fiyatlandırma:** Sipariş anındaki güncel fiyatlar üzerinden hesaplama.
 
-### Premium Partners
+### 🚚 Satın Alma Yönetimi
+*   **Tedarikçi Yönetimi:** Tedarikçi firma kayıtları ve detayları.
+*   **Satın Alma Siparişleri:** Tedarikçilerden ürün alım süreçlerinin yönetimi.
+*   **Stok Entegrasyonu:** Tamamlanan satın almalarda stok miktarının otomatik artırılması.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 📄 Fatura ve Raporlama
+*   **Fatura Oluşturma:** Satış siparişlerini tek tıkla faturaya dönüştürme.
+*   **PDF Çıktısı:** Faturaları profesyonel formatta PDF olarak indirme ve görüntüleme (`dompdf` entegrasyonu).
+*   **Haftalık Raporlar:** Sistemdeki hareketlerin otomatik raporlanması.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## � Teknoloji Yığını
 
-## Code of Conduct
+*   **Backend:** Laravel 12.x, PHP 8.2+
+*   **Frontend:** Blade Şablon Motoru, Tailwind CSS, Alpine.js
+*   **Veritabanı:** MySQL / SQLite
+*   **Build Tool:** Vite
+*   **Paketler & Kütüphaneler:**
+    *   `barryvdh/laravel-dompdf`: PDF fatura oluşturma için.
+    *   `laravel/socialite`: Sosyal medya (Google) girişleri için.
+    *   `revolution/laravel-google-sheets`: (Opsiyonel) Google Sheets entegrasyonları için.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## ⏱️ Scheduler / Otomasyon (Cron)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Laravel Scheduler kullanılarak aşağıdaki otomatik görevler oluşturulmuştur:
 
-## License
+- Günlük kritik stok kontrolü
+- Geciken satın alma siparişleri tespiti
+- Aylık fiyat loglama
+- Haftalık satış raporu oluşturma
+- Pasif müşteri tespiti
+- Eski bildirimlerin otomatik temizlenmesi
+- Vadesi geçmiş faturaların takibi
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+> Laravel 10+ sürümleri için `routes/console.php` üzerinden tanımlanmıştır.
+
+---
+
+## ⚙️ Kurulum
+
+Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyin.
+
+### Gereksinimler
+*   PHP >= 8.2
+*   Composer
+*   Node.js & NPM
+*   MySQL veya SQLite
+
+### Adım Adım Kurulum
+
+1.  **Projeyi Klonlayın:**
+    ```bash
+    git clone https://github.com/kullaniciadi/mini-erp.git
+    cd mini-erp
+    ```
+
+2.  **Bağımlılıkları Yükleyin (PHP & Node):**
+    ```bash
+    composer install
+    npm install
+    ```
+
+3.  **Çevresel Ayarları Yapın:**
+    `.env.example` dosyasını kopyalayarak `.env` dosyasını oluşturun.
+    ```bash
+    cp .env.example .env
+    ```
+    `.env` dosyasını açın ve veritabanı ayarlarınızı yapılandırın (DB_DATABASE, DB_USERNAME, vb.).
+
+4.  **Uygulama Anahtarını Oluşturun:**
+    ```bash
+    php artisan key:generate
+    ```
+
+5.  **Veritabanını Hazırlayın:**
+    Tabloları oluşturmak ve örnek verileri yüklemek için:
+    ```bash
+    php artisan migrate --seed
+    ```
+
+6.  **Frontend Varlıklarını Derleyin:**
+    ```bash
+    npm run build
+    ```
+
+7.  **Sunucuyu Başlatın:**
+    ```bash
+    php artisan serve
+    ```
+    Tarayıcınızda `http://localhost:8000` adresine giderek uygulamayı görüntüleyebilirsiniz.
+
+---
+
+## � Ekran Görüntüleri
+
+1 Navigation Bar :
+
+![img_7.png](img_7.png)
+
+2 Dashboard :
+
+![img_8.png](img_8.png)
+
+3 Ürünler : 
+
+![img_9.png](img_9.png)
+
+3.1 Yeni Ürün Ekle : 
+
+![img_10.png](img_10.png)
+
+3.2 Detay : 
+
+![img_11.png](img_11.png)
+
+3.3 Düzenle :
+
+![img_12.png](img_12.png)
+
+4 Kategoriler :
+
+![img_13.png](img_13.png)
+
+5 Müşteriler :
+
+![img_14.png](img_14.png)
+
+6 Satışlar :
+
+![img_15.png](img_15.png)
+
+7 Stok Yönetimi :
+
+![img_16.png](img_16.png)
+
+8 Siparişler : 
+
+![img_17.png](img_17.png)
+
+9 Bildirimler : 
+
+![img_18.png](img_18.png)
+
+
+
+---
+
+## 🤝 Katkıda Bulunma
+
+1.  Bu repoyu fork edin.
+2.  Yeni bir özellik dalı oluşturun (`git checkout -b feature/yeni-ozellik`).
+3.  Değişikliklerinizi commit edin (`git commit -m 'Yeni özellik eklendi'`).
+4.  Dalınızı push edin (`git push origin feature/yeni-ozellik`).
+5.  Bir Pull Request oluşturun.
+
+---
