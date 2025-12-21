@@ -15,6 +15,8 @@ class Customer extends Model
         'status','last_order_date'
     ];
 
+
+
     public function notes()
     {
         return $this->hasMany(CustomerNote::class);

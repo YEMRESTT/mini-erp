@@ -19,3 +19,22 @@ Schedule::command('notifications:cleanup')
 
 Schedule::command('purchase:check-delayed')
     ->dailyAt('09:30');
+
+
+Schedule::command('products:monthly-price-log')
+    ->monthlyOn(1, '02:00');
+
+
+Schedule::command('reports:weekly-sales')
+    ->weeklyOn(7, '23:55'); // pazar gecesi
+
+
+Schedule::command('customers:mark-passive')
+    ->dailyAt('02:00');
+
+Schedule::command('notifications:cleanup')
+    ->dailyAt('03:00');
+
+
+Schedule::command('invoices:check-overdue')
+    ->dailyAt('08:00');

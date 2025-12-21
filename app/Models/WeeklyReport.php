@@ -20,10 +20,22 @@ Hafta içinde en çok sipariş veren müşteri.
 
 class WeeklyReport extends Model
 {
-use HasFactory;
+    use HasFactory;
     protected $fillable = [
         'total_sales',
         'top_product',
         'top_customer',
     ];
+
+    // 🔵 En çok satan ürün
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'top_product');
+    }
+
+    // 🔵 En çok sipariş veren müşteri
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'top_customer');
+    }
 }
